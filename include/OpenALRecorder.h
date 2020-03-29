@@ -22,12 +22,17 @@ public:
     /**
      * Records audio from the capture device for seconds time and returns captured data
      */
-    std::vector<ALubyte> record(float seconds);
+    std::vector<ALubyte> record(int seconds);
 
     /**
      * Records audio from the capture device for seconds time and saves it to WAV file
      */
     void record(float seconds, const std::string &fileName);
+
+    /**
+     * Writes data to WAV file
+     */
+    void writeToFile(const std::vector<ALubyte> &data, const std::string &fileName);
 
 private:
     static void fwrite16le(ALushort val, FILE *f);

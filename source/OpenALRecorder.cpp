@@ -43,7 +43,7 @@ std::string OpenALRecorder::getCaptureDeviceName() {
     return alcGetString(mDevice, ALC_CAPTURE_DEVICE_SPECIFIER);
 }
 
-std::vector<ALubyte> OpenALRecorder::record(float seconds) {
+std::vector<ALubyte> OpenALRecorder::record(int seconds) {
     auto err = ALC_NO_ERROR;
     auto dataSize = 0;
     ALubyte *buffer = nullptr;
@@ -55,7 +55,7 @@ std::vector<ALubyte> OpenALRecorder::record(float seconds) {
     time_t currentTime = time(nullptr);
     time_t lastTime = currentTime;
 
-    while (currentTime < (lastTime + 5) && (err = alcGetError(mDevice)) == ALC_NO_ERROR) {
+    while (currentTime < (lastTime + seconds) && (err = alcGetError(mDevice)) == ALC_NO_ERROR) {
         ALCint count = 0;
         alcGetIntegerv(mDevice, ALC_CAPTURE_SAMPLES, 1, &count);
 
@@ -136,6 +136,25 @@ void OpenALRecorder::record(float seconds, const std::string &fileName) {
     auto total_size = ftell(file);
     if (fseek(file, mDataSizeOffset, SEEK_SET) == 0) {
         fwrite32le(dataSize * mFrameSize, file);
+        if (fseek(file, 4, SEEK_SET) == 0)
+            fwrite32le(static_cast<ALuint>(total_size) - 8, file);
+    }
+
+    fclose(file);
+}
+
+void OpenALRecorder::writeToFile(const std::vector<ALubyte> &data, const std::string &fileName) {
+    auto file = fopen(fileName.c_str(), "wb");
+    if (!file)
+        throw std::runtime_error("unable to open a file");
+
+    openAndWriteWAVHeader(file);
+
+    fwrite(data.data(), sizeof(ALubyte), data.size(), file);
+
+    auto total_size = ftell(file);
+    if (fseek(file, mDataSizeOffset, SEEK_SET) == 0) {
+        fwrite32le(data.size(), file);
         if (fseek(file, 4, SEEK_SET) == 0)
             fwrite32le(static_cast<ALuint>(total_size) - 8, file);
     }

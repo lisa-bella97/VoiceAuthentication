@@ -2,14 +2,45 @@
 
 #include <cstring>
 #include <iostream>
+#include <math.h>
 
+
+std::vector<ALubyte> filter(const std::vector<ALubyte> &samples) {
+    auto samplesSize = samples.size();
+    std::vector<ALubyte> result(samplesSize);
+
+    if (samplesSize > 1) {
+        result[0] = samples[0];
+        result[1] = samples[1];
+    }
+
+    for (auto i = 2; i < samplesSize; i += 2) {
+        int current = samples[i];
+        current <<= 8;
+        current |= samples[i + 1];
+
+        int previous = samples[i - 2];
+        previous <<= 8;
+        previous |= samples[i - 1];
+
+        //auto res = short(current - 0.95*previous);
+
+        int res = int(current - int(previous));
+
+        result[i + 1] = res;
+        res >>= 8;
+        result[i] = res;
+    }
+
+    return result;
+}
 
 int main(int argc, char **argv) {
     std::string deviceName;
     int channels = 1;
     int bits = 16;
     int sampleRate = 9600;
-    int time = 5;
+    int time = 4;
     std::string fileName;
 
     const std::string helpText = "Usage:\n" + std::string(argv[0]) + "\n"
@@ -56,6 +87,8 @@ int main(int argc, char **argv) {
         if (fileName.empty()) {
             auto result = recorder.record(time);
             std::cout << "Recording is completed." << std::endl;
+            recorder.writeToFile(result, "sample.wav");
+            recorder.writeToFile(filter(result), "filtered.wav");
         } else {
             recorder.record(time, fileName);
             std::cout << "Recording is completed to file: " << fileName << std::endl;
