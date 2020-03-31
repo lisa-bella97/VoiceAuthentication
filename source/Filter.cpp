@@ -42,13 +42,14 @@ std::vector<unsigned char> Filter::removePauses(const std::vector<unsigned char>
     int N = samples.size() / sampleSize; // Число отсчетов сигнала
     double T = 1.0 / sampleRate; // Период дискретизации
     double n = 0.02 / T; // Количество отсчетов в периоде стационарности
-    double s = log(n) / log(2); // Степень двойки (log2(n) = log(n) / log(2))
-    int nInFrame = (int)pow(2, s); // Количество отсчетов в кадре
+    int s = int(log(n) / log(2)); // Степень двойки (log2(n) = log(n) / log(2))
+    int nInFrame = (int) pow(2, s); // Количество отсчетов в кадре
     int K = N / nInFrame; // Количество итераций Фурье-преобразования
 
     // Вычисление Фурье-преобразования
+    for (auto i = 0; i < K; ++i) {
 
-
+    }
 
     return result;
 }
@@ -58,10 +59,11 @@ unsigned long long Filter::getAmplitude(const std::vector<unsigned char> &sample
     unsigned long long max = 0;
 
     for (auto i = 0; i < samplesSize; i += sampleSize) {
-        // TODO: сейчас это реализовано только для sampleSize = 2
         unsigned long long current = samples[i];
-        current <<= 8;
-        current |= samples[i + 1];
+        for (auto j = i + 1; j < i + sampleSize; ++j) {
+            current <<= 8;
+            current |= samples[j];
+        }
 
         if (current > max)
             max = current;
