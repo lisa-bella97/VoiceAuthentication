@@ -38,5 +38,5 @@ mark_as_advanced(OPENAL_LIBRARY OPENAL_INCLUDE_DIR)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 add_executable(voiceAuthentication ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/OpenALRecorder.cpp source/Filter.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/OpenALRecorder.cpp source/Filter.cpp include/fft.h source/fft.cpp)
 target_link_libraries(voiceAuthentication openal)

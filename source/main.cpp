@@ -2,7 +2,6 @@
 
 #include <cstring>
 #include <iostream>
-#include <math.h>
 #include <Filter.h>
 
 
