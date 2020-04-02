@@ -60,13 +60,11 @@ Filter::getMFCC(const std::vector<unsigned char> &rawSamples, int sampleRate, in
     int stride = 160; // шаг
     int length_frame = 400;
     int length_DFT = 512;
-    int number_coefficients = 13;
+    int number_coefficients = mfccNumber;
     int number_filterbanks = 26;
 
     int number_feature_vectors;
     int nSamplesPerSec = sampleRate;
-
-    double pi = 3.14159265358979323846;
 
     double **feature_vector;
 
@@ -90,7 +88,7 @@ Filter::getMFCC(const std::vector<unsigned char> &rawSamples, int sampleRate, in
 
         // windowing
         for (int j = 0; j < length_frame; j++) {
-            frame[j] *= 0.54 - 0.46 * cos(2 * pi * j / (length_frame - 1));
+            frame[j] *= 0.54 - 0.46 * cos(2 * M_PI * j / (length_frame - 1));
         }
 
         MFCC(length_frame, length_DFT, number_coefficients, number_filterbanks, nSamplesPerSec, frame,
@@ -311,8 +309,6 @@ double Filter::getMeanValue(const std::vector<std::pair<double, int>> &values) {
 
 void Filter::DCT(int direction, int length, double X[]) {
     if (direction == 1 || direction == -1) {
-        double pi = 3.14159265358979323846;
-
         auto *x = new double[length];
 
         for (int i = 0; i < length; i++) {
@@ -323,11 +319,11 @@ void Filter::DCT(int direction, int length, double X[]) {
 
             if (direction == 1) {
                 for (int n = 0; n < length; n++) {
-                    sum += ((k == 0) ? (sqrt(0.5)) : (1)) * x[n] * cos(pi * (n + 0.5) * k / length);
+                    sum += ((k == 0) ? (sqrt(0.5)) : (1)) * x[n] * cos(M_PI * (n + 0.5) * k / length);
                 }
             } else if (direction == -1) {
                 for (int n = 0; n < length; n++) {
-                    sum += ((n == 0) ? (sqrt(0.5)) : (1)) * x[n] * cos(pi * n * (k + 0.5) / length);
+                    sum += ((n == 0) ? (sqrt(0.5)) : (1)) * x[n] * cos(M_PI * n * (k + 0.5) / length);
                 }
             }
             X[k] = sum * sqrt(2.0 / length);
@@ -345,8 +341,6 @@ void Filter::FFT(int direction, int length, double Xr[], double Xi[]) {
     if (1 << log_length != length) {
         return;
     }
-
-    double pi = 3.14159265358979323846;
 
     for (int i = 0, j = 0; i < length; i++, j = 0) {
         for (int k = 0; k < log_length; k++) {
@@ -369,7 +363,7 @@ void Filter::FFT(int direction, int length, double Xr[], double Xi[]) {
 
         for (int j = 0; j < length - 1; j += 2 * L) {
             for (int k = 0; k < L; k++) {
-                double argument = direction * -pi * k / L;
+                double argument = direction * -M_PI * k / L;
 
                 double xr = Xr[j + k + L] * cos(argument) - Xi[j + k + L] * sin(argument);
                 double xi = Xr[j + k + L] * sin(argument) + Xi[j + k + L] * cos(argument);
@@ -389,7 +383,7 @@ void Filter::FFT(int direction, int length, double Xr[], double Xi[]) {
     }
 }
 
-double Filter::Mel_Scale(int direction, double x) {
+double Filter::melScale(int direction, double x) {
     switch (direction) {
         case -1:
             return 700 * (exp(x / 1125.0) - 1);
@@ -401,8 +395,8 @@ double Filter::Mel_Scale(int direction, double x) {
 
 void Filter::MFCC(int length_frame, int length_DFT, int number_coefficients, int number_filterbanks, int sample_rate,
                   const double frame[], double feature_vector[]) {
-    double max_Mels_frequency = Mel_Scale(1, sample_rate / 2);
-    double min_Mels_frequency = Mel_Scale(1, 300);
+    double max_Mels_frequency = melScale(1, sample_rate / 2);
+    double min_Mels_frequency = melScale(1, 300);
     double interval = (max_Mels_frequency - min_Mels_frequency) / (number_filterbanks + 1);
 
     auto *filterbank = new double[number_filterbanks];
@@ -420,7 +414,7 @@ void Filter::MFCC(int length_frame, int length_DFT, int number_coefficients, int
 
     for (int i = 0; i < length_DFT / 2 + 1; i++) {
         double frequency = (sample_rate / 2) * i / (length_DFT / 2);
-        double Mel_frequency = Mel_Scale(1, frequency);
+        double Mel_frequency = melScale(1, frequency);
         double power = (Xr[i] * Xr[i] + Xi[i] * Xi[i]) / length_frame;
 
         for (int j = 0; j < number_filterbanks; j++) {
@@ -429,13 +423,13 @@ void Filter::MFCC(int length_frame, int length_DFT, int number_coefficients, int
                                            min_Mels_frequency + interval * (j + 2)};
 
             if (frequency_boundary[0] <= Mel_frequency && Mel_frequency <= frequency_boundary[1]) {
-                double lower_frequency = Mel_Scale(-1, frequency_boundary[0]);
-                double upper_frequency = Mel_Scale(-1, frequency_boundary[1]);
+                double lower_frequency = melScale(-1, frequency_boundary[0]);
+                double upper_frequency = melScale(-1, frequency_boundary[1]);
 
                 filterbank[j] += power * (frequency - lower_frequency) / (upper_frequency - lower_frequency);
             } else if (frequency_boundary[1] <= Mel_frequency && Mel_frequency <= frequency_boundary[2]) {
-                double lower_frequency = Mel_Scale(-1, frequency_boundary[1]);
-                double upper_frequency = Mel_Scale(-1, frequency_boundary[2]);
+                double lower_frequency = melScale(-1, frequency_boundary[1]);
+                double upper_frequency = melScale(-1, frequency_boundary[2]);
 
                 filterbank[j] += power * (upper_frequency - frequency) / (upper_frequency - lower_frequency);
             }

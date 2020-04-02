@@ -29,7 +29,7 @@ private:
 
     static void FFT(int direction, int length, double Xr[], double Xi[]);
 
-    static double Mel_Scale(int direction, double x);
+    static double melScale(int direction, double x);
 
     static void MFCC(int length_frame, int length_DFT, int number_coefficients, int number_filterbanks, int sample_rate,
                      const double frame[], double feature_vector[]);
