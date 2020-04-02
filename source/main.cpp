@@ -58,7 +58,9 @@ int main(int argc, char **argv) {
             auto result = recorder.record(time);
             std::cout << "Recording is completed." << std::endl;
             recorder.writeToFile(result, "sample.wav");
-            recorder.writeToFile(Filter::removePauses(result, 2, sampleRate), "filtered.wav");
+            result = Filter::removePauses(result, sampleRate);
+            recorder.writeToFile(result, "pausesDeleted.wav");
+            auto res = Filter::getMFCC(result, sampleRate, 13);
         } else {
             recorder.record(time, fileName);
             std::cout << "Recording is completed to file: " << fileName << std::endl;

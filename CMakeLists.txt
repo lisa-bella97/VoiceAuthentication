@@ -14,11 +14,11 @@ find_path(OPENAL_INCLUDE_DIR al.h
         [HKEY_LOCAL_MACHINE\\SOFTWARE\\Creative\ Labs\\OpenAL\ 1.1\ Software\ Development\ Kit\\1.00.0000;InstallDir]
         )
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(_OpenAL_ARCH_DIR libs/Win64)
-else()
+else ()
     set(_OpenAL_ARCH_DIR libs/Win32)
-endif()
+endif ()
 
 find_library(OPENAL_LIBRARY
         NAMES OpenAL al openal OpenAL32
@@ -37,6 +37,5 @@ mark_as_advanced(OPENAL_LIBRARY OPENAL_INCLUDE_DIR)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
-add_executable(voiceAuthentication ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/source/OpenALRecorder.cpp source/Filter.cpp include/fft.h source/fft.cpp)
+add_executable(voiceAuthentication source/main.cpp source/OpenALRecorder.cpp source/Filter.cpp)
 target_link_libraries(voiceAuthentication openal)
