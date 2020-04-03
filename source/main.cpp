@@ -55,12 +55,18 @@ int main(int argc, char **argv) {
         std::cout << "Opened device: " << recorder.getCaptureDeviceName() << std::endl;
 
         if (fileName.empty()) {
-            auto result = recorder.record(time);
+            auto result = recorder.record(time + 1);
             std::cout << "Recording is completed." << std::endl;
             recorder.writeToFile(result, "sample.wav");
             result = Filter::removePauses(result, sampleRate);
             recorder.writeToFile(result, "pausesDeleted.wav");
             auto res = Filter::getMFCC(result, sampleRate, 13);
+            for (auto i = 0; i < res.size(); ++i) {
+                for (auto j = 0; j < res[0].size(); ++j) {
+                    std::cout << res[i][j] << ' ';
+                }
+                std::cout << std::endl;
+            }
         } else {
             recorder.record(time, fileName);
             std::cout << "Recording is completed to file: " << fileName << std::endl;
